@@ -8,7 +8,7 @@ const minAge = 18;
 const maxAge = 60;
 
   // 3. Создать переменную "age", в которую вы будете вводить возраст при выполнении программы
-let age = "61";
+let age = 19;
 console.log(`age: ${age}`);
 
   // 4. Добавьте проверку: если тип данных в переменной age не number - вывести в консоль Incorrect data type
