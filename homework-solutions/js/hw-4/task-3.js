@@ -7,7 +7,8 @@ console.log(`age: ${age}`);
 
 // Преобразовать Task 2 таким образом, чтобы значение НАПРИМЕР '2' (т.е. ЛЮБАЯ строка в которой лежат ТОЛЬКО ЦИФРЫ) пропускалось, 
 // преобразовываясь в number
-age = Number(age);
+const ageNum = Number(age);
+isNaN(ageNum) ? console.log("Incorrect data type") : age = ageNum;
 
 if (age < minAge ) {
   console.log(`You don't have access cause your age is ${age}. It's less then ${minAge}.`);
