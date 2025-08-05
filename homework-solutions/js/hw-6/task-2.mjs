@@ -13,7 +13,6 @@
   const myPizzasT2 = ['Peperoni', 'Caprichosa', 'Diablo', '4 cheeses', 'hawai'];
 */
 
-import { Console } from "console";
 
 let resultUnique = [];
 let resultNull;

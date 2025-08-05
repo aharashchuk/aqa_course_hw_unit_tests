@@ -1,4 +1,3 @@
-import { on } from "events";
 
 /*
 1. Цикл for..of в массиве
