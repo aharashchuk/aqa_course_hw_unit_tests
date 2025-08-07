@@ -12,7 +12,7 @@ const forOf = [];
 
 const oneToTen = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 for (const num of oneToTen) {
-  num % 2 === 0 ? forOf.push(num ** 2) : forOf.push(num ** 3);
+   forOf.push(num % 2 === 0 ? num ** 2 : num ** 3)
 }
 
 console.log(forOf);
