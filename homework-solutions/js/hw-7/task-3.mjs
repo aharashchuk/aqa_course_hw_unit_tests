@@ -8,8 +8,19 @@
 
 */
 
+import { Console } from "console";
+
 function digitalRoot(number) {
-  // Ваш код
+  if (number < 10) {
+    return number;
+  } else {
+    const digits = String(number).split('')
+    number = 0;
+    for (const digit of digits) {
+      number += Number(digit);
+    }
+    return digitalRoot(number);
+  }
 }
 
 export { digitalRoot };
