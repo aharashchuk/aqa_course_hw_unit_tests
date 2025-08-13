@@ -20,6 +20,16 @@ const words = [
 
 function sortedByVowels(wordsArr) {
   // Ваш код
+  if (wordsArr.length === 0) return [];
+  const vowels = 'aeiou';
+  const wordsArrLowerCase = wordsArr.map(word => word.toLowerCase())
+  const result = wordsArrLowerCase.sort((word1, word2) => 
+    [...word1].filter(letter => vowels.includes(letter)).length - 
+    [...word2].filter(letter => vowels.includes(letter)).length
+  );
+  return result;
 }
+
+
 
 export { sortedByVowels };
