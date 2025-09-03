@@ -52,14 +52,14 @@ testArray.forEach((num) => {
 const testPromisesArray = [promiseNumber(1), promiseNumber(2), promiseNumber(3)];
 
 function processPromiseAllResults(results) {
-    console.log(results);
+    // console.log(results);
     results.forEach((result) => {
         console.log(`Resolved: ${result}`);
     });
 }
 
 function processPromiseAllSettledResults(results) {
-    console.log(results);
+    // console.log(results);
     results.forEach((result) => {
         result.status === "fulfilled" ? console.log(`Resolved: ${result.value}`) : console.log(`Rejected: ${result.reason}`);
     });

@@ -23,3 +23,12 @@
             Album name 1 (10 photos)
             Album name 2 (100 photos)
 */
+
+const baseUrl = "https://jsonplaceholder.typicode.com";
+
+
+
+async function etchUserData(baseUrl) {
+
+    
+}
