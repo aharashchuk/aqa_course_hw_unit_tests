@@ -36,11 +36,12 @@ async function createTodo(todoBody) {
     }
 
     return data;
+
   } catch (error) {
-    console.error(error);
+    throw error;
   } finally {
     console.log("Function createTodo completed");
   }
 }
 
-console.log(createTodo(testTodoBody).then((result) => console.log(result)));
+createTodo(testTodoBody).then((result) => console.log(result));

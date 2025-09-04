@@ -26,9 +26,40 @@
 
 const baseUrl = "https://jsonplaceholder.typicode.com";
 
-
-
-async function etchUserData(baseUrl) {
-
+async function fetchUserData(url) {
+  try {
+    const [usersList, albumsList, photosList] = await Promise.all([
+      fetch(`${url}/users`).then(res => res.json()),
+      fetch(`${url}/albums`).then(res => res.json()),
+      fetch(`${url}/photos`).then(res => res.json())
+    ]);
     
+    return usersList.reduce((enrichedUsers, user) => {
+      const userAlbums = albumsList.filter(album => album.userId === user.id);
+      const userPhotos = photosList.filter(photo => userAlbums.some(album => album.id === photo.albumId));
+
+      enrichedUsers.push({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        company: user.company.name,
+        albums: userAlbums.map(album => (
+          `${album.title} (${userPhotos.filter(photo => photo.albumId === album.id).length} photos)`
+        ))
+      });
+      
+      return enrichedUsers;
+
+    }, []);
+
+
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  } finally {
+    console.log("Data fetching completed");
+  }
 }
+
+fetchUserData(baseUrl).then(data => {
+  console.log(data);
+});
