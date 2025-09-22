@@ -58,6 +58,90 @@ const enterprises = [
   },
 ];
 
+enum DEPARTMENTS {
+  QA = "Отдел тестирования",
+  MARKETING = "Отдел маркетинга",
+  ADMINISTRATION = "Администрация",
+  DEVELOPMENT = "Отдел разработки",
+  LABOR_SAFETY = "Отдел охраны труда",
+  ANALYTICS = "Отдел аналитики",
+}
+
+interface IDepartment {
+  id: number;
+  name: DEPARTMENTS;
+  employees_count?: number;
+}
+
+interface IEnterprise {
+  id: number;
+  name: string;
+  departments?: IDepartment[];
+  getDepartmentById(id: number): IDepartment | undefined;
+  getDepartmentByName(name: DEPARTMENTS): IDepartment | undefined;
+  getTotalEmployeesCount(): number;
+  addDepartment(department: IDepartment): void;
+  editDepartment(departmentId: number, newName: DEPARTMENTS): void;
+  deleteDepartment(departmentId: number): void;
+  moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void;  
+}
+
+interface IEnterpriseStorage<T extends IEnterprise> {
+  enterprises: T[];
+  getAllEnterprises(): T[];
+  getEnterpriseByDepartment(id: T["id"] | T["name"]): T | undefined;
+  addEnterprise(name: string): void;
+  addDepartment(enterpriseId: T["id"], departmentName: DEPARTMENTS): void;
+  editEnterprise(enterpriseId: T["id"], newName: string): void;
+  editDepartment(departmentId: number, newName: DEPARTMENTS): void;
+  deleteEnterprise(enterpriseId: T["id"]): void;
+  deleteDepartment(departmentId: number): void;
+  moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void;
+}
+
+class EnterpriseStorage<T extends IEnterprise> implements IEnterpriseStorage<T> {
+  constructor(public enterprises: T[]) {}
+
+  getAllEnterprises(): T[] {
+    return this.enterprises;
+  };
+  
+  getEnterpriseDepartment(id: T["id"] | T["name"]): T | undefined {
+    return this.enterprises.find(enterprise =>
+      enterprise.departments?.some(department => department.id === id || department.name === id)
+    );
+  };
+  
+  addEnterprise(name: string): void {
+    const newEnterprise: T = {
+      id: this.enterprises.length ? Math.max(...this.enterprises.map(e => e.id)) + 1 : 1,
+      name,
+  };
+  abstract addDepartment(enterpriseId: T["id"], departmentName: DEPARTMENTS): void;
+  abstract editEnterprise(enterpriseId: T["id"], newName: string): void;
+  abstract editDepartment(departmentId: number, newName: DEPARTMENTS): void;
+  abstract deleteEnterprise(enterpriseId: T["id"]): void;
+  abstract deleteDepartment(departmentId: number): void;
+  abstract moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void;
+}
+
+
+class Department implements IDepartment {
+
+  constructor(
+    public readonly id: number,
+    public name: DEPARTMENTS,
+    public employees_count: number,
+  ) {}
+}
+
+class Enterprise implements IEnterprise {
+
+  constructor(
+    public readonly id: number,
+    public name: string,
+    public departments: IDepartment[],
+  ) {}
 // Задания:
 // 1. Вывести все предприятия и их отделы. Рядом указать количество сотрудников. Для предприятия посчитать сумму всех сотрудников во всех отделах.
 
