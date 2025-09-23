@@ -70,18 +70,19 @@ enum DEPARTMENTS {
 interface IDepartment {
   id: number;
   name: DEPARTMENTS;
-  employees_count?: number;
+  employees_count: number;
 }
 
 interface IEnterprise {
   id: number;
   name: string;
   departments?: IDepartment[];
-  getDepartmentById(id: number): IDepartment | undefined;
-  getDepartmentByName(name: DEPARTMENTS): IDepartment | undefined;
+  getDepartmentIndexById(id: number): number;
+  getDepartmentById(id: number): IDepartment | null;
+  getDepartmentByName(name: DEPARTMENTS): IDepartment | null;
   getTotalEmployeesCount(): number;
   addDepartment(department: IDepartment): void;
-  editDepartment(departmentId: number, newName: DEPARTMENTS): void;
+  editDepartment(updatedDepartment: IDepartment): void;
   deleteDepartment(departmentId: number): void;
   moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void;  
 }
@@ -90,58 +91,125 @@ interface IEnterpriseStorage<T extends IEnterprise> {
   enterprises: T[];
   getAllEnterprises(): T[];
   getEnterpriseByDepartment(id: T["id"] | T["name"]): T | undefined;
-  addEnterprise(name: string): void;
-  addDepartment(enterpriseId: T["id"], departmentName: DEPARTMENTS): void;
-  editEnterprise(enterpriseId: T["id"], newName: string): void;
-  editDepartment(departmentId: number, newName: DEPARTMENTS): void;
+  addEnterprise(enterprise: T): void;
+  editEnterprise(updatedEnterprise:T): void;
   deleteEnterprise(enterpriseId: T["id"]): void;
-  deleteDepartment(departmentId: number): void;
-  moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void;
 }
-
-class EnterpriseStorage<T extends IEnterprise> implements IEnterpriseStorage<T> {
-  constructor(public enterprises: T[]) {}
-
-  getAllEnterprises(): T[] {
-    return this.enterprises;
-  };
-  
-  getEnterpriseDepartment(id: T["id"] | T["name"]): T | undefined {
-    return this.enterprises.find(enterprise =>
-      enterprise.departments?.some(department => department.id === id || department.name === id)
-    );
-  };
-  
-  addEnterprise(name: string): void {
-    const newEnterprise: T = {
-      id: this.enterprises.length ? Math.max(...this.enterprises.map(e => e.id)) + 1 : 1,
-      name,
-  };
-  abstract addDepartment(enterpriseId: T["id"], departmentName: DEPARTMENTS): void;
-  abstract editEnterprise(enterpriseId: T["id"], newName: string): void;
-  abstract editDepartment(departmentId: number, newName: DEPARTMENTS): void;
-  abstract deleteEnterprise(enterpriseId: T["id"]): void;
-  abstract deleteDepartment(departmentId: number): void;
-  abstract moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void;
-}
-
 
 class Department implements IDepartment {
 
   constructor(
     public readonly id: number,
     public name: DEPARTMENTS,
-    public employees_count: number,
+    public employees_count: number = 0,
   ) {}
 }
 
-class Enterprise implements IEnterprise {
-
+class Enterprise<T extends IEnterprise> implements IEnterprise {
+  
   constructor(
     public readonly id: number,
     public name: string,
-    public departments: IDepartment[],
+    public departments: IDepartment[] = [],
   ) {}
+
+  getDepartmentIndexById(id: number): number {
+    const found = this.departments.findIndex(department => department.id === id);
+    return found !== -1 ? found : -1;
+  }
+
+  getDepartmentById(id: number): IDepartment | null {
+    const found = this.departments.find(department => department.id === id);
+    return found ? structuredClone(found) : null;
+  }
+
+  getDepartmentByName(name: DEPARTMENTS): IDepartment | null {
+    const found = this.departments.find(department => department.name === name);
+    return found ? structuredClone(found) : null;
+  }
+
+  getTotalEmployeesCount(): number {
+    return this.departments.reduce((total, department) => total + (department.employees_count || 0), 0);
+  }
+  
+  addDepartment(department: IDepartment): void {
+    this.departments.push(department);
+  }
+
+  editDepartment(updatedDepartment: IDepartment): void {
+    const departmentIndex = this.getDepartmentIndexById(updatedDepartment.id);
+    if (departmentIndex !== -1) {
+      this.departments[departmentIndex] = structuredClone(updatedDepartment);
+    } else {
+      throw new Error(`Department with id ${updatedDepartment.id} not found`);
+    }
+  }
+  
+  deleteDepartment(departmentId: number): void {
+    const departmentIndex = this.getDepartmentIndexById(departmentId);
+    if (departmentIndex !== -1) {
+      this.departments.splice(departmentIndex, 1);
+    } else {
+      throw new Error(`Department with id ${departmentId} not found`);
+    }
+  }
+
+  moveEmployees(fromDepartmentId: number, toDepartmentId: number, count: number): void {
+    const fromDepartment = this.getDepartmentById(fromDepartmentId);
+    const toDepartment = this.getDepartmentById(toDepartmentId);
+
+    if (!fromDepartment) {
+      throw new Error(`Source department with id ${fromDepartmentId} not found`);
+    }
+    if (!toDepartment) {
+      throw new Error(`Target department with id ${toDepartmentId} not found`);
+    }
+    if ((fromDepartment.employees_count || 0) < count) {
+      throw new Error(`Not enough employees in source department to move`);
+    }
+
+    fromDepartment.employees_count = (fromDepartment.employees_count || 0) - count;
+    toDepartment.employees_count = (toDepartment.employees_count || 0) + count;
+
+    this.editDepartment(fromDepartment);
+    this.editDepartment(toDepartment);
+  }
+
+}
+
+class EnterpriseStorage<T extends IEnterprise> implements IEnterpriseStorage<T> {
+  private enterprise: Enterprise<T>;
+  constructor(public enterprises: T[]) {}
+
+  
+
+  getAllEnterprises(): T[] {
+    return structuredClone(this.enterprises);
+  };
+
+  getEnterpriseDepartment(id: T["id"] | T["name"]): T | undefined {
+    return this.enterprises.find(enterprise =>
+      enterprise.departments?.some(department => department.id === id || department.name === id)
+    );
+  }
+
+  addEnterprise(enterprise: T): void {
+    this.enterprises.push(enterprise);
+  };
+
+  editEnterprise(updatedEnterprise: T): void {
+    const enterprise = this.enterprises.find(ent => ent.id === updatedEnterprise.id);
+    if (enterprise) {
+      enterprise.name = updatedEnterprise.name;
+    }
+  }
+
+  deleteEnterprise(enterpriseId: T["id"]): void {
+    this.enterprises = this.enterprises.filter(ent => ent.id !== enterpriseId);
+  }
+}
+
+
 // Задания:
 // 1. Вывести все предприятия и их отделы. Рядом указать количество сотрудников. Для предприятия посчитать сумму всех сотрудников во всех отделах.
 
