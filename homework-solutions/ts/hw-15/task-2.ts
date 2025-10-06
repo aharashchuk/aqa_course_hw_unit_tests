@@ -20,5 +20,6 @@ function getKeyByValue<T extends object> (obj: T, value: T[keyof T]): keyof T | 
     // Object.keys(obj) возвращает string[] а не (keyof T)[]
 }
 
+
 console.log(getKeyByValue(sampleObject, "Sample"));
 console.log(getKeyByValue(sampleObject, 2));
